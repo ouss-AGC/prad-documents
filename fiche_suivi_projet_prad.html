@@ -4422,6 +4422,10 @@
         </button>
         <input type="file" id="importFileInput" accept=".prad,.json" style="display: none;" onchange="importAllWithFiles(this)">
         
+        <button class="export-doc-btn github" onclick="openGitHubFilesModal()" style="background: linear-gradient(135deg, #24292e 0%, #40484f 100%); margin-top: 10px;">
+            📂 Parcourir les Documents GitHub
+        </button>
+        
         <div class="file-stats" id="fileStats">
             <div class="file-stats-item">
                 <span>📎 Documents joints:</span>
@@ -7746,6 +7750,423 @@
             }
         }
     })();
+    </script>
+    
+    <!-- GitHub Integration Script -->
+    <script>
+    // GitHub Repository Configuration
+    const GITHUB_CONFIG = {
+        owner: 'ouss-AGC',
+        repo: 'prad-documents',
+        branch: 'main',
+        baseUrl: 'https://raw.githubusercontent.com/ouss-AGC/prad-documents/main/'
+    };
+
+    // List of files in the GitHub repository
+    const GITHUB_FILES = [
+        { name: 'Calendrier Evaluation 2026.pdf', size: '152 KB', type: 'pdf' },
+        { name: 'Camera Ready ID57 Atoui Oussama-V2 CCE 2025.pdf', size: '563 KB', type: 'pdf' },
+        { name: 'Certificate of participation Oussama Atoui CCE 2025.pdf', size: '369 KB', type: 'pdf' },
+        { name: 'Fiche de suivi projet PRAD.xlsx', size: '39 KB', type: 'xlsx' },
+        { name: 'Full paper azer maazoun CCE 2025.pdf', size: '593 KB', type: 'pdf' },
+        { name: 'Mini Fiche Projet-Lt Col Atoui Oussama.pdf', size: '180 KB', type: 'pdf' },
+        { name: 'PFE Imen Memmi Recyclage et valorisation des dechets de caoutchouc.pdf', size: '3.2 MB', type: 'pdf' },
+        { name: 'Tunisian-Indian Application 2025.pdf', size: '7.8 MB', type: 'pdf' },
+        { name: 'best paper award CCE 2025.pdf', size: '272 KB', type: 'pdf' },
+        { name: 'ouss presentation PRAD 19 01 2026.pdf', size: '8.5 MB', type: 'pdf' },
+        { name: 'ouss presentation PRAD WP3.pdf', size: '973 KB', type: 'pdf' },
+        { name: 'poster_PRAD_Lt Col_Oussama_Atoui V3.pdf', size: '1.3 MB', type: 'pdf' }
+    ];
+
+    function getGitHubFileUrl(filename) {
+        return GITHUB_CONFIG.baseUrl + encodeURIComponent(filename);
+    }
+
+    function downloadGitHubFile(filename) {
+        const url = getGitHubFileUrl(filename);
+        window.open(url, '_blank');
+    }
+
+    function getFileIcon(type) {
+        const icons = { 'pdf': '📄', 'xlsx': '📊', 'xls': '📊', 'pptx': '📽️', 'ppt': '📽️', 'docx': '📝', 'doc': '📝', 'png': '🖼️', 'jpg': '🖼️', 'jpeg': '🖼️' };
+        return icons[type] || '📁';
+    }
+
+    function escapeFileName(filename) {
+        return filename.replace(/'/g, "\\'").replace(/"/g, '\\"');
+    }
+
+    function createGitHubFilesBrowser() {
+        const modal = document.createElement('div');
+        modal.id = 'githubFilesModal';
+        modal.className = 'github-modal';
+        modal.innerHTML = `
+            <div class="github-modal-content">
+                <div class="github-modal-header">
+                    <h3>📁 Documents du Projet PRAD (GitHub)</h3>
+                    <button class="github-modal-close" onclick="closeGitHubFilesModal()">&times;</button>
+                </div>
+                <div class="github-modal-body">
+                    <div class="github-files-list" id="githubFilesList">
+                        ${GITHUB_FILES.map((file, index) => `
+                            <div class="github-file-item" data-index="${index}">
+                                <div class="github-file-icon">${getFileIcon(file.type)}</div>
+                                <div class="github-file-info">
+                                    <div class="github-file-name">${file.name}</div>
+                                    <div class="github-file-size">${file.size}</div>
+                                </div>
+                                <div class="github-file-actions">
+                                    <button class="github-btn-view" onclick="viewGitHubFile('${escapeFileName(file.name)}')" title="Voir">👁 Voir</button>
+                                    <button class="github-btn-download" onclick="downloadGitHubFile('${escapeFileName(file.name)}')" title="Télécharger">⬇️ Télécharger</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="github-modal-footer">
+                    <span class="github-files-count">${GITHUB_FILES.length} fichiers disponibles</span>
+                    <a href="https://github.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}" target="_blank" class="github-repo-link">Voir sur GitHub ↗</a>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    function openGitHubFilesModal() {
+        const modal = document.getElementById('githubFilesModal');
+        if (modal) modal.classList.add('show');
+    }
+
+    function closeGitHubFilesModal() {
+        const modal = document.getElementById('githubFilesModal');
+        if (modal) modal.classList.remove('show');
+    }
+
+    function viewGitHubFile(filename) {
+        const url = getGitHubFileUrl(filename);
+        // Open all files directly in a new tab for better compatibility
+        window.open(url, '_blank');
+    }
+
+    function showGitHubPdfViewer(filename, url) {
+        let viewer = document.getElementById('githubPdfViewer');
+        if (!viewer) {
+            viewer = document.createElement('div');
+            viewer.id = 'githubPdfViewer';
+            viewer.className = 'github-pdf-viewer';
+            viewer.innerHTML = `
+                <div class="github-pdf-header">
+                    <span class="github-pdf-title"></span>
+                    <div class="github-pdf-controls">
+                        <button onclick="window.open(document.getElementById('githubPdfFrame').src, '_blank')" title="Ouvrir dans un nouvel onglet">🔗 Nouvel onglet</button>
+                        <button onclick="closeGitHubPdfViewer()" title="Fermer">✕ Fermer</button>
+                    </div>
+                </div>
+                <iframe id="githubPdfFrame" class="github-pdf-frame"></iframe>
+            `;
+            document.body.appendChild(viewer);
+        }
+        viewer.querySelector('.github-pdf-title').textContent = filename;
+        document.getElementById('githubPdfFrame').src = url;
+        viewer.classList.add('show');
+    }
+
+    function closeGitHubPdfViewer() {
+        const viewer = document.getElementById('githubPdfViewer');
+        if (viewer) {
+            viewer.classList.remove('show');
+            document.getElementById('githubPdfFrame').src = '';
+        }
+    }
+
+    // Add GitHub styles
+    const githubStyles = document.createElement('style');
+    githubStyles.textContent = `
+        .github-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 10000; }
+        .github-modal.show { display: flex; }
+        .github-modal-content { background: white; border-radius: 12px; width: 90%; max-width: 900px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .github-modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #24292e 0%, #40484f 100%); color: white; border-radius: 12px 12px 0 0; }
+        .github-modal-header h3 { margin: 0; font-size: 1.2rem; }
+        .github-modal-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 5px 10px; border-radius: 5px; }
+        .github-modal-close:hover { background: rgba(255,255,255,0.2); }
+        .github-modal-body { flex: 1; overflow-y: auto; padding: 0; }
+        .github-files-list { display: flex; flex-direction: column; }
+        .github-file-item { display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid #eee; transition: background 0.2s; }
+        .github-file-item:hover { background: #f5f9ff; }
+        .github-file-icon { font-size: 1.5rem; margin-right: 15px; }
+        .github-file-info { flex: 1; }
+        .github-file-name { font-weight: 500; color: #333; word-break: break-word; }
+        .github-file-size { font-size: 0.85rem; color: #666; margin-top: 3px; }
+        .github-file-actions { display: flex; gap: 8px; }
+        .github-file-actions button { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+        .github-btn-view { background: #e3f2fd; color: #1976d2; }
+        .github-btn-view:hover { background: #bbdefb; }
+        .github-btn-download { background: #e8f5e9; color: #388e3c; }
+        .github-btn-download:hover { background: #c8e6c9; }
+        .github-modal-footer { padding: 15px 20px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; border-radius: 0 0 12px 12px; }
+        .github-files-count { color: #666; font-size: 0.9rem; }
+        .github-repo-link { color: #1976d2; text-decoration: none; font-size: 0.9rem; }
+        .github-repo-link:hover { text-decoration: underline; }
+        .github-pdf-viewer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; z-index: 10001; }
+        .github-pdf-viewer.show { display: flex; }
+        .github-pdf-header { padding: 15px 20px; background: #24292e; color: white; display: flex; justify-content: space-between; align-items: center; }
+        .github-pdf-title { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%; }
+        .github-pdf-controls { display: flex; gap: 10px; }
+        .github-pdf-controls button { background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 0.9rem; }
+        .github-pdf-controls button:hover { background: rgba(255,255,255,0.3); }
+        .github-pdf-frame { flex: 1; border: none; background: white; }
+    `;
+    document.head.appendChild(githubStyles);
+
+    // Storage for GitHub file associations (field ID -> GitHub filename)
+    const githubFileAssociations = new Map();
+    let currentSelectionTarget = null; // The upload-wrapper being targeted for file selection
+
+    // Create GitHub file selector modal (for selecting files to attach)
+    function createGitHubFileSelector() {
+        const modal = document.createElement('div');
+        modal.id = 'githubFileSelectorModal';
+        modal.className = 'github-modal';
+        modal.innerHTML = `
+            <div class="github-modal-content">
+                <div class="github-modal-header" style="background: linear-gradient(135deg, #28a745 0%, #218838 100%);">
+                    <h3>📎 Sélectionner un Document GitHub</h3>
+                    <button class="github-modal-close" onclick="closeGitHubFileSelector()">&times;</button>
+                </div>
+                <div class="github-modal-body">
+                    <div class="github-files-list" id="githubFileSelectorList">
+                        ${GITHUB_FILES.map((file, index) => `
+                            <div class="github-file-item github-file-selectable" data-filename="${escapeFileName(file.name)}" onclick="selectGitHubFile('${escapeFileName(file.name)}')">
+                                <div class="github-file-icon">${getFileIcon(file.type)}</div>
+                                <div class="github-file-info">
+                                    <div class="github-file-name">${file.name}</div>
+                                    <div class="github-file-size">${file.size}</div>
+                                </div>
+                                <div class="github-file-select-btn">
+                                    <button class="github-btn-select">✓ Sélectionner</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="github-modal-footer">
+                    <span class="github-files-count">${GITHUB_FILES.length} fichiers disponibles</span>
+                    <button onclick="closeGitHubFileSelector()" style="background: #6c757d; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer;">Annuler</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    // Open file selector for a specific upload wrapper
+    function openGitHubFileSelector(button) {
+        currentSelectionTarget = button.closest('.upload-wrapper');
+        const modal = document.getElementById('githubFileSelectorModal');
+        if (modal) modal.classList.add('show');
+    }
+
+    function closeGitHubFileSelector() {
+        const modal = document.getElementById('githubFileSelectorModal');
+        if (modal) modal.classList.remove('show');
+        currentSelectionTarget = null;
+    }
+
+    // Select a GitHub file and associate it with the current field
+    function selectGitHubFile(filename) {
+        if (!currentSelectionTarget) return;
+        
+        const fileInput = currentSelectionTarget.querySelector('.file-input');
+        const fileList = currentSelectionTarget.querySelector('.file-list');
+        const storageKey = fileInput.id || 'github_' + Math.random().toString(36).substr(2, 9);
+        fileInput.id = storageKey;
+        
+        // Store the association
+        if (!githubFileAssociations.has(storageKey)) {
+            githubFileAssociations.set(storageKey, []);
+        }
+        const associations = githubFileAssociations.get(storageKey);
+        
+        // Check if file is already associated
+        if (!associations.includes(filename)) {
+            associations.push(filename);
+            
+            // Add file item to the list
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item github-linked-file';
+            fileItem.innerHTML = `
+                <span class="file-name github-file-link" title="${filename}" onclick="viewGitHubFile('${escapeFileName(filename)}')">
+                    <span style="color: #28a745;">📁</span> ${filename}
+                </span>
+                <span class="file-remove" onclick="removeGitHubFileAssociation(this, '${storageKey}', '${escapeFileName(filename)}')">×</span>
+            `;
+            fileList.appendChild(fileItem);
+            
+            // Save associations to localStorage
+            saveGitHubAssociations();
+            
+            showNotification('Document GitHub lié: ' + filename, 'success');
+        } else {
+            showNotification('Ce document est déjà lié', 'info');
+        }
+        
+        closeGitHubFileSelector();
+    }
+
+    // Remove a GitHub file association
+    function removeGitHubFileAssociation(element, storageKey, filename) {
+        const associations = githubFileAssociations.get(storageKey);
+        if (associations) {
+            const index = associations.indexOf(filename);
+            if (index > -1) {
+                associations.splice(index, 1);
+            }
+        }
+        element.parentElement.remove();
+        saveGitHubAssociations();
+        showNotification('Lien supprimé', 'info');
+    }
+
+    // View files associated with a field (opens GitHub files)
+    function viewGitHubLinkedFiles(button) {
+        const wrapper = button.closest('.upload-wrapper');
+        const fileInput = wrapper.querySelector('.file-input');
+        const storageKey = fileInput.id;
+        const associations = githubFileAssociations.get(storageKey) || [];
+        
+        if (associations.length === 0) {
+            showNotification('Aucun document GitHub lié. Utilisez "Joindre" pour lier un document.', 'info');
+            return;
+        }
+        
+        if (associations.length === 1) {
+            // Open single file directly
+            viewGitHubFile(associations[0]);
+        } else {
+            // Show list of associated files
+            showGitHubLinkedFilesModal(associations);
+        }
+    }
+
+    // Show modal with list of linked files
+    function showGitHubLinkedFilesModal(files) {
+        let modal = document.getElementById('githubLinkedFilesModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'githubLinkedFilesModal';
+            modal.className = 'github-modal';
+            document.body.appendChild(modal);
+        }
+        
+        modal.innerHTML = `
+            <div class="github-modal-content" style="max-width: 600px;">
+                <div class="github-modal-header">
+                    <h3>📎 Documents Liés</h3>
+                    <button class="github-modal-close" onclick="document.getElementById('githubLinkedFilesModal').classList.remove('show')">&times;</button>
+                </div>
+                <div class="github-modal-body">
+                    <div class="github-files-list">
+                        ${files.map(filename => {
+                            const file = GITHUB_FILES.find(f => f.name === filename) || { type: 'pdf', size: '' };
+                            return `
+                                <div class="github-file-item">
+                                    <div class="github-file-icon">${getFileIcon(file.type)}</div>
+                                    <div class="github-file-info">
+                                        <div class="github-file-name">${filename}</div>
+                                        <div class="github-file-size">${file.size}</div>
+                                    </div>
+                                    <div class="github-file-actions">
+                                        <button class="github-btn-view" onclick="viewGitHubFile('${escapeFileName(filename)}')">👁 Voir</button>
+                                        <button class="github-btn-download" onclick="downloadGitHubFile('${escapeFileName(filename)}')">⬇️ Télécharger</button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+        modal.classList.add('show');
+    }
+
+    // Save GitHub associations to localStorage
+    function saveGitHubAssociations() {
+        const data = {};
+        githubFileAssociations.forEach((files, key) => {
+            if (files.length > 0) {
+                data[key] = files;
+            }
+        });
+        localStorage.setItem('prad_github_associations', JSON.stringify(data));
+    }
+
+    // Load GitHub associations from localStorage
+    function loadGitHubAssociations() {
+        try {
+            const data = JSON.parse(localStorage.getItem('prad_github_associations') || '{}');
+            Object.entries(data).forEach(([key, files]) => {
+                githubFileAssociations.set(key, files);
+                
+                // Update UI
+                const fileInput = document.getElementById(key);
+                if (fileInput) {
+                    const wrapper = fileInput.closest('.upload-wrapper');
+                    const fileList = wrapper?.querySelector('.file-list');
+                    if (fileList) {
+                        files.forEach(filename => {
+                            const fileItem = document.createElement('div');
+                            fileItem.className = 'file-item github-linked-file';
+                            fileItem.innerHTML = `
+                                <span class="file-name github-file-link" title="${filename}" onclick="viewGitHubFile('${escapeFileName(filename)}')">
+                                    <span style="color: #28a745;">📁</span> ${filename}
+                                </span>
+                                <span class="file-remove" onclick="removeGitHubFileAssociation(this, '${key}', '${escapeFileName(filename)}')">×</span>
+                            `;
+                            fileList.appendChild(fileItem);
+                        });
+                    }
+                }
+            });
+        } catch (e) {
+            console.error('Error loading GitHub associations:', e);
+        }
+    }
+
+    // Override triggerUpload to open GitHub file selector instead
+    const originalTriggerUpload = window.triggerUpload;
+    window.triggerUpload = function(button) {
+        openGitHubFileSelector(button);
+    };
+
+    // Override viewFiles to view GitHub linked files
+    const originalViewFiles = window.viewFiles;
+    window.viewFiles = function(button) {
+        viewGitHubLinkedFiles(button);
+    };
+
+    // Add styles for GitHub file selection
+    const githubSelectorStyles = document.createElement('style');
+    githubSelectorStyles.textContent = `
+        .github-file-selectable { cursor: pointer; }
+        .github-file-selectable:hover { background: #e8f5e9 !important; }
+        .github-btn-select { background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+        .github-btn-select:hover { background: #218838; }
+        .github-linked-file .file-name { color: #28a745 !important; cursor: pointer; }
+        .github-linked-file .file-name:hover { text-decoration: underline; }
+        .github-file-link { display: flex; align-items: center; gap: 5px; }
+    `;
+    document.head.appendChild(githubSelectorStyles);
+
+    // Initialize GitHub integration on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        createGitHubFilesBrowser();
+        createGitHubFileSelector();
+        setTimeout(loadGitHubAssociations, 500); // Load after other initializations
+    });
+    if (document.readyState !== 'loading') {
+        createGitHubFilesBrowser();
+        createGitHubFileSelector();
+        setTimeout(loadGitHubAssociations, 500);
+    }
     </script>
 </body>
 </html>
